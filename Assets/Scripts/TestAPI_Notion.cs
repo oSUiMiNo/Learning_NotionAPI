@@ -16,7 +16,8 @@ using UnityEngine.Networking;
 public class TestAPI_Notion : MonoBehaviour
 {
     private const string NotionAccessToken = "secret_GKXw55IIbLe0LkOPsWpt0IG8BCLfOokRhamOysuBhyW";
-    private const string DatabaseID = "b40fd183c85b4a1da4fbb1c1beaaa6b2";
+
+    public string AA;
 
     void Start()
     {
@@ -24,12 +25,14 @@ public class TestAPI_Notion : MonoBehaviour
         InputEventHandler.OnKeyDown_B += UseAPI_POST;
         InputEventHandler.OnKeyDown_C += UseAPI_Add;
         InputEventHandler.OnKeyDown_D += UseAPI_DowiloadFile;
+        InputEventHandler.OnKeyDown_E += UseAPI_Add_Test;
     }
 
     //C#からでもNotionのデータベースのオブジェクト取得できるけど、ネストしたJSONを解きほぐす作業とかめんどい
     //Json.net使ったら出来るみたいだけどめんどいので気が向いたら。
     async void UseAPI_GET()
     {
+        string DatabaseID = "b40fd183c85b4a1da4fbb1c1beaaa6b2";
         string jsonStr = string.Empty;
 
         using (UnityWebRequest request = UnityWebRequest.Get($"https://api.notion.com/v1/databases/{DatabaseID}"))
@@ -98,6 +101,7 @@ public class TestAPI_Notion : MonoBehaviour
 
     async void UseAPI_POST()
     {
+        string DatabaseID = "b40fd183c85b4a1da4fbb1c1beaaa6b2";
         WWWForm form = new WWWForm();
 
         string jsonStr = string.Empty;
@@ -279,6 +283,8 @@ public class TestAPI_Notion : MonoBehaviour
     // パースエラー出て使えん
     async void UseAPI_Add()
     {
+        const string DatabaseID = "b40fd183c85b4a1da4fbb1c1beaaa6b2";
+
         NotionAdditionalData additionalData = new NotionAdditionalData()
         {
             databaseID = DatabaseID,
@@ -310,6 +316,90 @@ public class TestAPI_Notion : MonoBehaviour
         request.SetRequestHeader("Accept", "application/json");
         request.SetRequestHeader("Notion-Version", "2022-02-22");
        
+
+        await request.SendWebRequest();
+
+
+
+        switch (request.result)
+        {
+            case UnityWebRequest.Result.InProgress:
+                Debug.Log("リクエスト中");
+                break;
+
+            case UnityWebRequest.Result.Success:
+                Debug.Log("リクエスト成功");
+                break;
+
+            case UnityWebRequest.Result.ConnectionError:
+                Debug.Log(
+                    @"サーバとの通信に失敗。
+                        リクエストが接続できなかった、
+                        セキュリティで保護されたチャネルを確立できなかったなど。");
+                Debug.LogError(request.error);
+                break;
+
+            case UnityWebRequest.Result.ProtocolError:
+                Debug.Log(
+                    @"サーバがエラー応答を返した。
+                        サーバとの通信には成功したが、
+                        接続プロトコルで定義されているエラーを受け取った。");
+                Debug.LogError(request.error);
+                break;
+
+            case UnityWebRequest.Result.DataProcessingError:
+                Debug.Log(
+                    @"データの処理中にエラーが発生。
+                        リクエストはサーバとの通信に成功したが、
+                        受信したデータの処理中にエラーが発生。
+                        データが破損しているか、正しい形式ではないなど。");
+                Debug.LogError(request.error);
+                break;
+
+            default: throw new ArgumentOutOfRangeException();
+        }
+    }
+
+
+
+    class A
+    {
+        public Dictionary<string, string> parent = new Dictionary<string, string>()
+        {
+            { "database_id", "cf2343f8bb934f51b3cddd99640fc790" }
+        };
+       
+    }
+
+
+
+    // パースエラー出て使えん
+    async void UseAPI_Add_Test()
+    {
+        string DatabaseID = "cf2343f8bb934f51b3cddd99640fc790";
+
+        NotionAdditionalData additionalData = new NotionAdditionalData()
+        {
+
+        };
+        additionalData.SetProps();
+        string payload = JsonConvert.SerializeObject(additionalData, Formatting.Indented);
+
+        DebugView.Log($"{payload}");
+
+        JObject jsonObject = JObject.Parse(payload);
+        //DebugView.Log($"{jsonObject["properties"]["数学"]["number"]}");
+        string payload0 = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+        DebugView.Log($"{payload0}");
+
+        DebugView.Log(P);
+
+        UnityWebRequest request = UnityWebRequest.Post($"https://api.notion.com/v1/pages", payload);
+        request.SetRequestHeader("Authorization", $"Bearer {NotionAccessToken}");
+        request.SetRequestHeader("Content-Type", "application/json; charset=UTF-8");
+        request.SetRequestHeader("Accept", "application/json");
+        request.SetRequestHeader("Notion-Version", "2022-02-22");
+
 
         await request.SendWebRequest();
 
