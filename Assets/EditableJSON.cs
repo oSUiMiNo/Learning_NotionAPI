@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using UnityEngine;
 
-
+// まずCreateAssetMenu_JSONでもととなるJsonファイルを作成(Project View上で右クリック → Create/TextFile をクリック)
 // コンストラクタに任意のJsonファイルのパスを渡すと値をいじれる形式であるJObjectとして返してくれる。
 public class EditableJSON
 {
