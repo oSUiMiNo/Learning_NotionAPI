@@ -7,26 +7,50 @@ using System.Text;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.XR;
 
 // このNotionページにDB置いてある。
 //https://www.notion.so/6795dd70753a495897cb85e0abce95fe
 
 public class TestAPI_Notion : MonoBehaviour
 {
-    private const string NotionAccessToken = "secret_GKXw55IIbLe0LkOPsWpt0IG8BCLfOokRhamOysuBhyW";
-
-    public string AA;
+    //private const string NotionAccessToken = "secret_GKXw55IIbLe0LkOPsWpt0IG8BCLfOokRhamOysuBhyW";
+    private const string NotionAccessToken = "secret_OIxSWO69mxnD9FNbmL2US0pcsLWCUmsaglBZBCWPWrC"; //新しい方
 
     void Start()
     {
-        InputEventHandler.OnKeyDown_A += UseAPI_GET;
-        InputEventHandler.OnKeyDown_B += UseAPI_POST;
-        InputEventHandler.OnKeyDown_C += UseAPI_Add;
-        InputEventHandler.OnKeyDown_D += UseAPI_DowiloadFile;
-        InputEventHandler.OnKeyDown_E += UseAPI_Add_Test;
+        InputEventHandler.OnDown_A += UseAPI_GET;
+        InputEventHandler.OnDown_B += UseAPI_POST;
+        InputEventHandler.OnDown_C += UseAPI_Add;
+        InputEventHandler.OnDown_D += UseAPI_DowiloadFile;
+        InputEventHandler.OnDown_E += UseAPI_Add_Test;
     }
+
+    //void Oauth()
+    //{
+    //    var client = new RestClient("https://api.notion.com/v1/oauth/token _");
+    //    client.Timeout = -1;
+    //    var request = new RestRequest(Method.POST);
+    //    client.UserAgent = "Apidog/1.0.0 (https://apidog.com)";
+    //    request.AddHeader("Content-Type", "application/json");
+    //    var body = @"{" + "\n" +
+    //    @"    ""grant_type"": ""string""," + "\n" +
+    //    @"    ""code"": ""string""," + "\n" +
+    //    @"    ""redirect_uri"": ""string""," + "\n" +
+    //    @"    ""external_account"": {" + "\n" +
+    //    @"        ""key"": ""string""," + "\n" +
+    //    @"        ""name"": ""string""" + "\n" +
+    //    @"    }" + "\n" +
+    //    @"}";
+    //    request.AddParameter("application/json", body, ParameterType.RequestBody);
+    //    IRestResponse response = client.Execute(request);
+    //    Console.WriteLine(response.Content);
+    //}
+
+
 
     //C#からでもNotionのデータベースのオブジェクト取得できるけど、ネストしたJSONを解きほぐす作業とかめんどい
     //Json.net使ったら出来るみたいだけどめんどいので気が向いたら。
@@ -315,7 +339,12 @@ public class TestAPI_Notion : MonoBehaviour
         request.SetRequestHeader("Content-Type", "application/json; charset=UTF-8");
         request.SetRequestHeader("Accept", "application/json");
         request.SetRequestHeader("Notion-Version", "2022-02-22");
-       
+
+
+        byte[] bodyRaw = Encoding.UTF8.GetBytes(payload);
+        request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        request.downloadHandler = new DownloadHandlerBuffer();
+
 
         await request.SendWebRequest();
 
@@ -378,27 +407,27 @@ public class TestAPI_Notion : MonoBehaviour
     {
         string DatabaseID = "cf2343f8bb934f51b3cddd99640fc790";
 
-        NotionAdditionalData additionalData = new NotionAdditionalData()
-        {
-
-        };
-        additionalData.SetProps();
-        string payload = JsonConvert.SerializeObject(additionalData, Formatting.Indented);
-
+        EditableJSON eJson_Payload = new EditableJSON($@"{Application.dataPath}\Payload.json");
+        eJson_Payload.Obj["parent"]["database_id"] = DatabaseID;
+        string payload = eJson_Payload.Json;
+        
         DebugView.Log($"{payload}");
 
-        JObject jsonObject = JObject.Parse(payload);
-        //DebugView.Log($"{jsonObject["properties"]["数学"]["number"]}");
-        string payload0 = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
-        DebugView.Log($"{payload0}");
+        EditableJSON eJson_Opts = new EditableJSON($@"{Application.dataPath}\Opts.json");
+        eJson_Opts.Obj["headers"]["Notion-Version"] = "2022-06-28";
+        eJson_Opts.Obj["headers"]["Authorization"] = $"Bearer {NotionAccessToken}";
+        eJson_Opts.Obj["headers"]["Content-Type"] = "application/json; charset=UTF-8";
+        eJson_Opts.Obj["payload"] = payload;
 
-        DebugView.Log(P);
 
-        UnityWebRequest request = UnityWebRequest.Post($"https://api.notion.com/v1/pages", payload);
-        request.SetRequestHeader("Authorization", $"Bearer {NotionAccessToken}");
-        request.SetRequestHeader("Content-Type", "application/json; charset=UTF-8");
-        request.SetRequestHeader("Accept", "application/json");
-        request.SetRequestHeader("Notion-Version", "2022-02-22");
+        string opts = eJson_Opts.Json;
+
+
+        UnityWebRequest request = UnityWebRequest.Post($"https://api.notion.com/v1/pages", opts);
+
+        byte[] bodyRaw = Encoding.UTF8.GetBytes(opts);
+        request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        request.downloadHandler = new DownloadHandlerBuffer();
 
 
         await request.SendWebRequest();

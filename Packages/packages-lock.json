@@ -1,12 +1,5 @@
 {
   "dependencies": {
-    "com.cysharp.unitask": {
-      "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "73d86259ce31ce7f4dfe1d028ea1c3edf96c23e4"
-    },
     "com.unity.burst": {
       "version": "1.6.5",
       "depth": 1,
@@ -170,12 +163,12 @@
       },
       "url": "https://packages.unity.com"
     },
-    "jp.maku.my_package_json": {
+    "jp.maku.maku_utillity": {
       "version": "https://github.com/oSUiMiNo/Maku.git",
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "c6c1de7530c6dcdb1ac23b094fd533547eb9145d"
+      "hash": "bd451891bdb7b61a697412ce0ad22cdba021a462"
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",
